@@ -47,7 +47,7 @@ namespace 科傻文件模拟生成
             //设置对话框打开的文件类型
             ofd.Filter = "文本文件|*.txt|Excel文件|*.xls;*.xlsx|dat文件|*.dat";
            //设置文件对话框当前选定的筛选器的索引
-            ofd.FilterIndex = 3;
+            ofd.FilterIndex = 2;
             ofd.RestoreDirectory = true;
             if (ofd.ShowDialog() == DialogResult.OK)
             {
@@ -105,7 +105,7 @@ namespace 科傻文件模拟生成
                 var tables = con.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { });
                 if (tables.Rows.Count == 0)
                 { throw new Exception("Excel必须包含一个表"); }
-                foreach (System.Data.DataRow row in tables.Rows)
+                foreach (DataRow row in tables.Rows)
                 {
                     string strSheetTableName = row["TABLE_NAME"].ToString();
                     //过滤无效SheetName   
@@ -156,8 +156,11 @@ namespace 科傻文件模拟生成
             //Q.endPointName = this.textBox4.Text.ToString();
             //Q.azimuth= Convert.ToDouble(this.textBox5.Text);
 
-            Main M = new Main(this.dt,"QZ1");
-            M.getAzimuthRAD();
+            Main M = new Main(this.dt,"QZ2");
+            //M.getFXJ(M.radToDEG(M.getAzimuthRAD()));
+            M.getDistance(M.getdlt());
+            
+            //M.getatan();
 
         }
     }
