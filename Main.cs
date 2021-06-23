@@ -8,12 +8,15 @@ namespace 科傻文件模拟生成
 {
     class Main
     {
+        public StartingData Q;
         public DataTable dt;
         public string stationName;
-        public Main(DataTable dt,string stationName)
+        public Main(DataTable dt,string stationName, StartingData Q)
         {
             this.dt = dt;
             this.stationName = stationName;
+            this.Q = Q;
+            
         }
         public List<List<double>> getdlt()
         {
@@ -69,7 +72,7 @@ namespace 科傻文件模拟生成
             return azimuthRAD;
         }
 
-        public List<double> radToDEG(List<double> rad)
+       static public List<double> radToDEG(List<double> rad)
         {
             List<double> DEG=new List<double>();
             foreach(double i in rad)
@@ -109,7 +112,7 @@ namespace 科傻文件模拟生成
             return FXJ;
 
         }
-        public  string TranDegreeToDMs(double d)
+        static public  string TranDegreeToDMs(double d)
         {
             int Degree = Convert.ToInt16(Math.Truncate(d));//度
             d = d - Degree;
@@ -153,5 +156,37 @@ namespace 科傻文件模拟生成
             }
             return distance;
         }
+        public  static List<double> getRand(int n)
+        {
+            List<double> rand = new List<double>();
+            for(int i = 0; i < n; i++)
+            {
+                rand.Add(Rand(1, 2));
+            }
+            return rand;
         }
+
+        private static int GetRandomSeed()
+        {
+            byte[] bytes = new byte[4];
+            System.Security.Cryptography.RNGCryptoServiceProvider rng = new System.Security.Cryptography.RNGCryptoServiceProvider();
+            rng.GetBytes(bytes);
+            return BitConverter.ToInt32(bytes, 0);
+        }
+        public static double Rand(double u, double d)
+        {
+            double u1, u2, z, x;
+            //Random ram = new Random();
+            if (d <= 0)
+            {
+                return u;
+            }
+            u1 = (new Random(GetRandomSeed())).NextDouble();
+            u2 = (new Random(GetRandomSeed())).NextDouble();
+            z = Math.Sqrt(-2 * Math.Log(u1)) * Math.Sin(2 * Math.PI * u2);
+            x = u + d * z;
+            return x;
+
+        }
+    }
 }

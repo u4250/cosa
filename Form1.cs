@@ -11,28 +11,22 @@ using System.IO;
 using System.Data.OleDb;
 namespace 科傻文件模拟生成
 {
+
     public partial class Form1 : Form
     {
         public Form1()
         {
             InitializeComponent();
-            ToolTip tooltip1 = new ToolTip();
-            tooltip1.IsBalloon = true;
-            tooltip1.SetToolTip(textBox1, "保存设定");
-            tooltip1.SetToolTip(textBox6, "顾客将会看到你的公告，请不要乱写！");
+            ReadLog("程序启动。。。");
+
 
         }
-        private struct StartingData
+        public void ReadLog(string log)
         {
-            public double azimuthError;
-            public double a;
-            public double b;
-            public string endPointName;
-            public string startingPointName;
-            public double azimuth;
-            public double startingPoint;
-
-        };
+            string Time = Convert.ToString(DateTime.Now);
+            
+            textBox8.AppendText(Time + "  " + log + "\r\n");
+        }
         public DataTable dt=new DataTable();
         private void button1_Click(object sender, EventArgs e)
         {
@@ -51,6 +45,7 @@ namespace 科傻文件模拟生成
             ofd.RestoreDirectory = true;
             if (ofd.ShowDialog() == DialogResult.OK)
             {
+                ReadLog("正在读取数据。。。");
 
                 string strCon = string.Empty;
                 string path = ofd.FileName;
@@ -64,6 +59,7 @@ namespace 科傻文件模拟生成
                         if (line == null)
                         {
                             MessageBox.Show("文件为空！");
+                            ReadLog("文件为空。。。。");
                             return;
                         }
                         try
@@ -79,10 +75,12 @@ namespace 科傻文件模拟生成
                                 dt.Rows.Add(cols);
                             }
                             dt.PrimaryKey = new DataColumn[] { dt.Columns[0] };
+                            ReadLog("文件读取成功。。。");
                             this.dataGridView1.DataSource = dt;
                         }
                         catch
                         {
+                            ReadLog("读取失败，格式错误！");
                             MessageBox.Show("格式错误!");
                         }
                         break;
@@ -98,9 +96,9 @@ namespace 科傻文件模拟生成
                     return;
                 }
                 OleDbConnection con = new OleDbConnection(strCon);
-                //try
-                //{
-                con.Open();
+                try
+                {
+                    con.Open();
                 //默认读取第一个有数据的工作表
                 var tables = con.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { });
                 if (tables.Rows.Count == 0)
@@ -118,17 +116,20 @@ namespace 科傻文件模拟生成
                         OleDbDataAdapter apt = new OleDbDataAdapter(cmd);
                         apt.Fill(dt);
                         dt.TableName = strSheetTableName.Replace("$", "").Replace("'", "");
+                         con.Close();
                         break;
                     }
                 }
                 dt.PrimaryKey = new DataColumn[] { dt.Columns[0] };
                 this.dataGridView1.DataSource = dt;
-
-                //}
-                //catch (Exception ex)
-                //{
-                //    MessageBox.Show(ex.ToString());
-                //}
+                ReadLog("文件读取成功。。。");
+                }
+                catch (Exception ex)
+                {
+                    con.Close();
+                    ReadLog(ex.ToString());
+                    MessageBox.Show("文件读取失败");
+                }
 
             }
         }
@@ -147,16 +148,19 @@ namespace 科傻文件模拟生成
             //    MessageBox.Show("设置起算数据!");
             //    return;
             //}
-            //StartingData Q = new StartingData();
-            //Q.azimuthError= Convert.ToDouble(this.textBox1.Text);
-            //Q.a = Convert.ToDouble(this.textBox6.Text);
-            //Q.b = Convert.ToDouble(this.textBox7.Text);
-            //Q.startingPoint =Convert.ToDouble(this.textBox3.Text);
-            //Q.startingPointName = this.textBox2.Text.ToString();
-            //Q.endPointName = this.textBox4.Text.ToString();
-            //Q.azimuth= Convert.ToDouble(this.textBox5.Text);
+            StartingData Q = new StartingData();
+            //{
+            //    azimuthError = Convert.ToDouble(this.textBox1.Text),
+            //    a = Convert.ToDouble(this.textBox6.Text),
+            //    b = Convert.ToDouble(this.textBox7.Text),
+            //    startingPoint = Convert.ToDouble(this.textBox3.Text),
+            //    startingPointName = this.textBox2.Text.ToString(),
+            //    endPointName = this.textBox4.Text.ToString(),
+            //    azimuth = Convert.ToDouble(this.textBox5.Text)
+            //};
 
-            Main M = new Main(this.dt,"QZ2");
+            Main M = new Main(this.dt,"QZ2",Q);
+            M.getFXJ(M.radToDEG(M.getAzimuthRAD()));
             //M.getFXJ(M.radToDEG(M.getAzimuthRAD()));
             M.getDistance(M.getdlt());
             
