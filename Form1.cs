@@ -12,6 +12,7 @@ using System.Data.OleDb;
 namespace 科傻文件模拟生成
 {
 
+   
     public partial class Form1 : Form
     {
         public Form1()
@@ -28,6 +29,7 @@ namespace 科傻文件模拟生成
             textBox8.AppendText(Time + "  " + log + "\r\n");
         }
         public DataTable dt=new DataTable();
+        public DataTable resDt = new DataTable();
         private void button1_Click(object sender, EventArgs e)
         {
             this.dataGridView1.DataSource = null;
@@ -149,6 +151,9 @@ namespace 科傻文件模拟生成
             //    return;
             //}
             StartingData Q = new StartingData();
+            Q.azimuthError = 1.28;
+            Q.a = 3.67;
+            Q.b = 2;
             //{
             //    azimuthError = Convert.ToDouble(this.textBox1.Text),
             //    a = Convert.ToDouble(this.textBox6.Text),
@@ -158,14 +163,69 @@ namespace 科傻文件模拟生成
             //    endPointName = this.textBox4.Text.ToString(),
             //    azimuth = Convert.ToDouble(this.textBox5.Text)
             //};
+            DataColumn dc = new DataColumn();
+            resDt.Columns.Add(dc);
+            resDt.Columns.Add(new DataColumn());
+            resDt.Columns.Add(new DataColumn());
+            //写入文件通用前两行
+            double[] R2 = new double[3] { Q.azimuthError, Q.a, Q.b };
+            string[] R1 = new string[3] {  (Q.azimuthError.ToString()), (Q.a.ToString()), (Q.b.ToString()) };
+            double[] doubleArray = Array.ConvertAll<string, double>(R1, s => double.Parse(s));
+            resDt.Rows.Add(R1);
+            R1 = (new string[]{ Q.startingPointName, Q.startingPointX, Q.startingPointY });
+            resDt.Rows.Add(R1);
+            ReadLog("正在计算*************");
+            foreach (DataRow row in dt.Rows)
+            {
+                string stationName = row[0].ToString();
+                ReadLog("正在计算******"+stationName+"站*******");
+                Main M = new Main(this.dt, stationName, Q);
+                List<List<double>> dlt = M.getdlt();
+                List<double> atan = M.getatan(dlt);
+                List<double> azimuthRAD = M.getAzimuthRAD(dlt, atan);
+                List<double> azimuthDEG = M.radToDEG(azimuthRAD);
+                List<double> FXZ = M.getFXJ(azimuthDEG);
+                List<double> FXZObs = M.getFXJObs(FXZ);//角度模拟观测值 ***************
+                for(int i=0; i < dt.Rows.Count; i++)
+                {
+                    if (dt.Rows[i][0].Equals(Q.endPointName) && dt.Select(dt.Columns[3] + "='A'").Length < 0)
+                    {
+                        resDt.Rows.Add(new List<string> { Q.endPointName, "A", Q.azimuth.ToString() });
+                    }
+                    resDt.Rows.Add(new List<object> { dt.Rows[i][0], "L", FXZObs[i]}.ConvertAll<string>(x => x.ToString()));
+                }
+                //foreach(DataRow row1 in dt.Rows)
+                //{
+                //    if (row1[0].Equals(Q.endPointName))
+                //    {
+                //        resDt.Rows.Add(new List<string> { Q.endPointName,"A",Q.azimuth.ToString()});
+                //    }
+                //    resDt.Rows.Add(new List<object> { row1[0], "L",FXZObs[row1] });
+                //}
+                List<double> dis = M.getDistance(dlt);
+                List<double> disObs = M.getDistanceObs(dis);//距离模拟观测值 ***************
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    //if (dt.Rows[i][0].Equals(Q.endPointName))
+                    //{
+                    //    resDt.Rows.Add(new List<string> { Q.endPointName, "A", Q.azimuth.ToString() });
+                    //}
+                    resDt.Rows.Add(new List<object> { dt.Rows[i][0], "S",disObs[i] }.ConvertAll<string>(x => x.ToString()));
+                }
 
-            Main M = new Main(this.dt,"QZ2",Q);
-            M.getFXJ(M.radToDEG(M.getAzimuthRAD()));
+            }
+            ReadLog("完成计算*************");
             //M.getFXJ(M.radToDEG(M.getAzimuthRAD()));
-            M.getDistance(M.getdlt());
-            
+            //M.getFXJ(M.radToDEG(M.getAzimuthRAD()));
+            //M.getDistance(M.getdlt());
+
             //M.getatan();
 
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            
         }
     }
 }

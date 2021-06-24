@@ -26,12 +26,16 @@ namespace 科傻文件模拟生成
             DataRow station=dt.Rows.Find(stationName);
             foreach(DataRow row in dt.Rows)
             {
-                //if (row[0].ToString() != stationName)
-                //{
-
-                //}
-                dltY.Add(Convert.ToDouble(row[1]) - Convert.ToDouble(station[1]));
-                dltX.Add(Convert.ToDouble(row[2]) - Convert.ToDouble(station[2]));
+                if (stationName.Equals(row[0].ToString()))
+                {
+                    dltX.Add(double.NaN);
+                    dltY.Add(double.NaN);
+                }
+                else
+                {
+                    dltY.Add(Convert.ToDouble(row[1]) - Convert.ToDouble(station[1]));
+                    dltX.Add(Convert.ToDouble(row[2]) - Convert.ToDouble(station[2]));
+                }
             }
            
             dltAB.Add(dltY);
@@ -49,10 +53,11 @@ namespace 科傻文件模拟生成
             }
             return atan;
         }
-        public List<double> getAzimuthRAD()
+        public List<double> getAzimuthRAD(List<List<double>> dltXY, List<double> atan)
         {
-            List<List<double>> dltXY = getdlt();
-            List<double> atan = getatan(dltXY);
+            //计算弧度方位角
+            //List<List<double>> dltXY = getdlt();
+            //List<double> atan = getatan(dltXY);
             List<double> azimuthRAD = new List<double>();
             for(int j=0;j<atan.Count;j++)
             {
@@ -72,8 +77,9 @@ namespace 科傻文件模拟生成
             return azimuthRAD;
         }
 
-       static public List<double> radToDEG(List<double> rad)
+        public List<double> radToDEG(List<double> rad)
         {
+            //弧度转角度方位角
             List<double> DEG=new List<double>();
             foreach(double i in rad)
             {
@@ -81,8 +87,9 @@ namespace 科傻文件模拟生成
             }
             return DEG;
         }
-        public List<double> getFXJ(List<double> DEG)//方向角  设置第一个为已知点
+        public List<double> getFXJ(List<double> DEG)
         {
+            //方向值  设置第一个为已知点
             double initAngle;
             List<double> FXJ = new List<double>();
             if (!double.IsNaN(DEG[0]))
@@ -147,6 +154,24 @@ namespace 科傻文件模拟生成
             }
             return rstr;
         }
+        public List<double> getFXJObs(List<double> fxj)
+        {
+            List<double> Obs = new List<double>();
+            double ra = 0.0;
+            for(int i = 0; i < fxj.Count; i++)
+            {
+                if(double.IsNaN(fxj[i])||fxj[i]==0.0)
+                {
+                    Obs.Add(double.NaN);
+                }
+                else
+                {
+                    ra = Rand(0, Q.azimuthError);
+                    Obs.Add(fxj[i] + ra);  //模拟观测值  方向角+随机值
+                }
+            }
+            return Obs;
+        }
         public List<double> getDistance(List<List<double>> dltXY)
         {
             List<double> distance = new List<double>();
@@ -155,6 +180,24 @@ namespace 科傻文件模拟生成
                 distance.Add(Math.Pow((Math.Pow(dltXY[0][j],2) + Math.Pow(dltXY[1][j],2)),0.5));
             }
             return distance;
+        }
+        public List<double> getDistanceObs(List<double> dis)
+        {
+            List<double> disObs = new List<double>();
+            double ra = 0.0;
+            for (int i = 0; i < dis.Count; i++)
+            {
+                if (double.IsNaN(dis[i]))
+                {
+                    disObs.Add(dis[i]);
+                }
+                else
+                {
+                    ra = Rand(0, Q.a + Q.b * dis[i] / 1000);
+                    disObs.Add(dis[i] + ra);  //模拟观测值  方向角+随机值
+                }
+            }
+            return disObs;
         }
         public  static List<double> getRand(int n)
         {

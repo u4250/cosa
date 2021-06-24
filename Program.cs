@@ -14,7 +14,8 @@ namespace 科傻文件模拟生成
         public string endPointName;
         public string startingPointName;
         public double azimuth;
-        public double startingPoint;
+        public string startingPointX;
+        public string startingPointY;
 
     };
     static class Program
