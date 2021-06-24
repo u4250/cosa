@@ -12,7 +12,6 @@ using System.Data.OleDb;
 namespace 科傻文件模拟生成
 {
 
-   
     public partial class Form1 : Form
     {
         public Form1()
@@ -154,6 +153,10 @@ namespace 科傻文件模拟生成
             Q.azimuthError = 1.28;
             Q.a = 3.67;
             Q.b = 2;
+            Q.startingPointX = "5818";
+            Q.startingPointY = "2812";
+            Q.endPointName = "QZ2";
+            Q.azimuth = 12.1212;
             //{
             //    azimuthError = Convert.ToDouble(this.textBox1.Text),
             //    a = Convert.ToDouble(this.textBox6.Text),
@@ -168,17 +171,16 @@ namespace 科傻文件模拟生成
             resDt.Columns.Add(new DataColumn());
             resDt.Columns.Add(new DataColumn());
             //写入文件通用前两行
-            double[] R2 = new double[3] { Q.azimuthError, Q.a, Q.b };
-            string[] R1 = new string[3] {  (Q.azimuthError.ToString()), (Q.a.ToString()), (Q.b.ToString()) };
-            double[] doubleArray = Array.ConvertAll<string, double>(R1, s => double.Parse(s));
-            resDt.Rows.Add(R1);
-            R1 = (new string[]{ Q.startingPointName, Q.startingPointX, Q.startingPointY });
-            resDt.Rows.Add(R1);
+            resDt.Rows.Add((new List<double> { Q.azimuthError, Q.a, Q.b }).ConvertAll<string>(x => x.ToString()).ToArray());
+            string[] R = new string[] { Q.startingPointName, Q.startingPointX, Q.startingPointY };
+            resDt.Rows.Add(R);
+            bool Flag = true;
             ReadLog("正在计算*************");
             foreach (DataRow row in dt.Rows)
             {
                 string stationName = row[0].ToString();
                 ReadLog("正在计算******"+stationName+"站*******");
+                resDt.Rows.Add(new List<object> { stationName }.ConvertAll<string>(x => x.ToString()).ToArray());
                 Main M = new Main(this.dt, stationName, Q);
                 List<List<double>> dlt = M.getdlt();
                 List<double> atan = M.getatan(dlt);
@@ -188,11 +190,19 @@ namespace 科傻文件模拟生成
                 List<double> FXZObs = M.getFXJObs(FXZ);//角度模拟观测值 ***************
                 for(int i=0; i < dt.Rows.Count; i++)
                 {
-                    if (dt.Rows[i][0].Equals(Q.endPointName) && dt.Select(dt.Columns[3] + "='A'").Length < 0)
+                    if (dt.Rows[i][0].Equals(Q.endPointName) && Flag)
                     {
-                        resDt.Rows.Add(new List<string> { Q.endPointName, "A", Q.azimuth.ToString() });
+                        resDt.Rows.Add(new List<string> { Q.endPointName, "A", Q.azimuth.ToString() }.ToArray());
+                        Flag = false;
                     }
-                    resDt.Rows.Add(new List<object> { dt.Rows[i][0], "L", FXZObs[i]}.ConvertAll<string>(x => x.ToString()));
+                    if (dt.Rows[i][0].Equals(stationName))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        resDt.Rows.Add(new List<object> { dt.Rows[i][0], "L", FXZObs[i] }.ConvertAll<string>(x => x.ToString()).ToArray());
+                    }
                 }
                 //foreach(DataRow row1 in dt.Rows)
                 //{
@@ -206,14 +216,15 @@ namespace 科傻文件模拟生成
                 List<double> disObs = M.getDistanceObs(dis);//距离模拟观测值 ***************
                 for (int i = 0; i < dt.Rows.Count; i++)
                 {
-                    //if (dt.Rows[i][0].Equals(Q.endPointName))
-                    //{
-                    //    resDt.Rows.Add(new List<string> { Q.endPointName, "A", Q.azimuth.ToString() });
-                    //}
-                    resDt.Rows.Add(new List<object> { dt.Rows[i][0], "S",disObs[i] }.ConvertAll<string>(x => x.ToString()));
+                    if (dt.Rows[i][0].Equals(stationName))
+                    {
+                        continue;
+                    }
+                    resDt.Rows.Add(new List<object> { dt.Rows[i][0], "S",disObs[i] }.ConvertAll<string>(x => x.ToString()).ToArray());
                 }
-
+             
             }
+            this.dataGridView1.DataSource = resDt;
             ReadLog("完成计算*************");
             //M.getFXJ(M.radToDEG(M.getAzimuthRAD()));
             //M.getFXJ(M.radToDEG(M.getAzimuthRAD()));

@@ -160,9 +160,13 @@ namespace 科傻文件模拟生成
             double ra = 0.0;
             for(int i = 0; i < fxj.Count; i++)
             {
-                if(double.IsNaN(fxj[i])||fxj[i]==0.0)
+                if(double.IsNaN(fxj[i]))
                 {
                     Obs.Add(double.NaN);
+                }
+                else if(fxj[i] == 0.0)
+                {
+                    Obs.Add(fxj[i]);
                 }
                 else
                 {
