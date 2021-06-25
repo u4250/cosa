@@ -29,6 +29,7 @@ namespace 科傻文件模拟生成
         }
         public DataTable dt=new DataTable();
         public DataTable resDt = new DataTable();
+        public string fileName ;
         private void button1_Click(object sender, EventArgs e)
         {
             this.dataGridView1.DataSource = null;
@@ -47,7 +48,7 @@ namespace 科傻文件模拟生成
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 ReadLog("正在读取数据。。。");
-
+                this.fileName =Path.GetFileNameWithoutExtension( ofd.SafeFileName);
                 string strCon = string.Empty;
                 string path = ofd.FileName;
                 string extension = Path.GetExtension(path);//扩展名 
@@ -75,6 +76,7 @@ namespace 科傻文件模拟生成
                                 cols = line.ToString().Split(',');
                                 dt.Rows.Add(cols);
                             }
+                            dt.Columns.RemoveAt(0);
                             dt.PrimaryKey = new DataColumn[] { dt.Columns[0] };
                             ReadLog("文件读取成功。。。");
                             this.dataGridView1.DataSource = dt;
@@ -153,10 +155,10 @@ namespace 科傻文件模拟生成
             Q.azimuthError = 1.28;
             Q.a = 3.67;
             Q.b = 2;
-            Q.startingPointX = "5818";
-            Q.startingPointY = "2812";
+            Q.startingPointX = "2306";
+            Q.startingPointY = "5306";
             Q.endPointName = "QZ2";
-            Q.azimuth = 12.1212;
+            Q.azimuth = 6.0606;
             //{
             //    azimuthError = Convert.ToDouble(this.textBox1.Text),
             //    a = Convert.ToDouble(this.textBox6.Text),
@@ -236,7 +238,45 @@ namespace 科傻文件模拟生成
 
         private void button3_Click(object sender, EventArgs e)
         {
+            SaveFileDialog sa = new SaveFileDialog();
+            sa.Filter = "平面网(*.in2)|*.in2";
+            sa.FileName = this.fileName;
+            sa.DefaultExt = "in2";
+            sa.AddExtension = true;
+            if (sa.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    ReadLog("正在写入"+sa.FileName);
+                    writer(sa.FileName);
+                }
+                catch(Exception ex)
+                {
+                    ReadLog(ex.ToString());
+                    MessageBox.Show("写入出错啦！");
+                }
+             
+            }
             
+        }
+        public void writer(string path)
+        {
+            StreamWriter sw = new StreamWriter(path, false, Encoding.Default);
+            foreach(DataRow line in this.resDt.Rows)
+            {
+                string Temp = "";
+                for(int i=0;i<this.resDt.Columns.Count;i++)
+                {
+                    string cell = line[i].ToString();
+                    if (!string.IsNullOrEmpty(cell))
+                    {
+                        Temp = Temp + cell + ',';
+                    }
+                }
+               sw.WriteLine(Temp);
+            }
+            sw.Close();
+            sw.Dispose();
         }
     }
 }

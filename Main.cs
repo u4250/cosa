@@ -11,20 +11,20 @@ namespace 科傻文件模拟生成
         public StartingData Q;
         public DataTable dt;
         public string stationName;
-        public Main(DataTable dt,string stationName, StartingData Q)
+        public Main(DataTable dt, string stationName, StartingData Q)
         {
             this.dt = dt;
             this.stationName = stationName;
             this.Q = Q;
-            
+
         }
         public List<List<double>> getdlt()
         {
             List<List<double>> dltAB = new List<List<double>>();
             List<double> dltY = new List<double>();
-            List<double>dltX = new List<double>();
-            DataRow station=dt.Rows.Find(stationName);
-            foreach(DataRow row in dt.Rows)
+            List<double> dltX = new List<double>();
+            DataRow station = dt.Rows.Find(stationName);
+            foreach (DataRow row in dt.Rows)
             {
                 if (stationName.Equals(row[0].ToString()))
                 {
@@ -37,7 +37,6 @@ namespace 科傻文件模拟生成
                     dltX.Add(Convert.ToDouble(row[2]) - Convert.ToDouble(station[2]));
                 }
             }
-           
             dltAB.Add(dltY);
             dltAB.Add(dltX);
             return dltAB;
@@ -45,8 +44,7 @@ namespace 科傻文件模拟生成
 
         public List<double> getatan(List<List<double>> dltXY)
         {
-  
-            List<double> atan=new List<double>();
+            List<double> atan = new List<double>();
             for (int j = 0; j < dltXY[0].Count; j++)
             {
                 atan.Add(Math.Atan(dltXY[0][j] / dltXY[1][j]));
@@ -59,10 +57,10 @@ namespace 科傻文件模拟生成
             //List<List<double>> dltXY = getdlt();
             //List<double> atan = getatan(dltXY);
             List<double> azimuthRAD = new List<double>();
-            for(int j=0;j<atan.Count;j++)
+            for (int j = 0; j < atan.Count; j++)
             {
-                if ( dltXY[0][j] > 0 &&  dltXY[1][j] < 0) { azimuthRAD.Add(Math.PI + atan[j]); continue; }
-                if ( dltXY[0][j] < 0 &&  dltXY[1][j] < 0) { azimuthRAD.Add(Math.PI + atan[j]); continue; }
+                if (dltXY[0][j] > 0 && dltXY[1][j] < 0) { azimuthRAD.Add(Math.PI + atan[j]); continue; }
+                if (dltXY[0][j] < 0 && dltXY[1][j] < 0) { azimuthRAD.Add(Math.PI + atan[j]); continue; }
                 if (dltXY[0][j] < 0 && dltXY[1][j] > 0) { azimuthRAD.Add(Math.PI * 2 + atan[j]); continue; }
                 //if ( dltXY[0][j] < 0 &&  dltXY[1][j] > 0) { azimuthRAD.Add(Math.PI * 2 + atan[j]); continue; }
                 //if ( dltXY[0][j] == 0 &&  dltXY[1][j] > 0) { azimuthRAD.Add(0.0); continue; }
@@ -71,17 +69,15 @@ namespace 科傻文件模拟生成
                 //if (dltXY[0][j] > 0 && dltXY[1][j] == 0) { azimuthRAD.Add(Math.PI * 2); continue; }
                 else azimuthRAD.Add(atan[j]);
 
-
             }
 
             return azimuthRAD;
         }
-
         public List<double> radToDEG(List<double> rad)
         {
             //弧度转角度方位角
-            List<double> DEG=new List<double>();
-            foreach(double i in rad)
+            List<double> DEG = new List<double>();
+            foreach (double i in rad)
             {
                 DEG.Add(i * 180 / Math.PI);
             }
@@ -104,7 +100,7 @@ namespace 科傻文件模拟生成
             {
                 if (!double.IsNaN(DEG[i]))
                 {
-                   double c= DEG[i]- initAngle;
+                    double c = DEG[i] - initAngle;
                     if (c < 0)
                     {
                         c += 360;
@@ -119,7 +115,7 @@ namespace 科傻文件模拟生成
             return FXJ;
 
         }
-        static public  string TranDegreeToDMs(double d)
+        static public string TranDegreeToDMs(double d)
         {
             int Degree = Convert.ToInt16(Math.Truncate(d));//度
             d = d - Degree;
@@ -158,20 +154,20 @@ namespace 科傻文件模拟生成
         {
             List<double> Obs = new List<double>();
             double ra = 0.0;
-            for(int i = 0; i < fxj.Count; i++)
+            for (int i = 0; i < fxj.Count; i++)
             {
-                if(double.IsNaN(fxj[i]))
+                if (double.IsNaN(fxj[i]))
                 {
                     Obs.Add(double.NaN);
                 }
-                else if(fxj[i] == 0.0)
+                else if (fxj[i] == 0.0)
                 {
                     Obs.Add(fxj[i]);
                 }
                 else
                 {
                     ra = Rand(0, Q.azimuthError);
-                    Obs.Add(fxj[i] + ra);  //模拟观测值  方向角+随机值
+                    Obs.Add(fxj[i] + ra / 3600);  //模拟观测值  方向角+随机值
                 }
             }
             return Obs;
@@ -181,7 +177,7 @@ namespace 科傻文件模拟生成
             List<double> distance = new List<double>();
             for (int j = 0; j < dltXY[0].Count; j++)
             {
-                distance.Add(Math.Pow((Math.Pow(dltXY[0][j],2) + Math.Pow(dltXY[1][j],2)),0.5));
+                distance.Add(Math.Pow((Math.Pow(dltXY[0][j], 2) + Math.Pow(dltXY[1][j], 2)), 0.5));
             }
             return distance;
         }
@@ -198,21 +194,20 @@ namespace 科傻文件模拟生成
                 else
                 {
                     ra = Rand(0, Q.a + Q.b * dis[i] / 1000);
-                    disObs.Add(dis[i] + ra);  //模拟观测值  方向角+随机值
+                    disObs.Add(dis[i] + ra / 1000);  //模拟观测值  方向角+随机值
                 }
             }
             return disObs;
         }
-        public  static List<double> getRand(int n)
+        public static List<double> getRand(int n)
         {
             List<double> rand = new List<double>();
-            for(int i = 0; i < n; i++)
+            for (int i = 0; i < n; i++)
             {
                 rand.Add(Rand(1, 2));
             }
             return rand;
         }
-
         private static int GetRandomSeed()
         {
             byte[] bytes = new byte[4];
@@ -233,7 +228,6 @@ namespace 科傻文件模拟生成
             z = Math.Sqrt(-2 * Math.Log(u1)) * Math.Sin(2 * Math.PI * u2);
             x = u + d * z;
             return x;
-
         }
     }
 }
